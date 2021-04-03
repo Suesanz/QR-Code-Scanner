@@ -11,6 +11,8 @@ export const StackNavigator = () => {
         stackAnimation: 'default',
         gestureEnabled: true,
         headerShown: false,
+        statusBarStyle: 'light',
+        stackPresentation: 'modal',
       }}
       initialRouteName={'HomeScreen'}>
       <Stack.Screen name={'ScanScreen'} component={Scan} />
