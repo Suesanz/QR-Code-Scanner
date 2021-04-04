@@ -1,5 +1,5 @@
-" {
-   "appointeeEmail: "yadavsourav24071998@gmail.com",
+ {
+   "appointeeEmail": "yadavsourav24071998@gmail.com",
    "appointerEmail": "Thesuesanz00@gmail.com",
    "appointmentTime": "9:08 PM, Mar 28, 2021",
    "appointerName": "Frank Collins",
@@ -8,4 +8,3 @@
    "clicked": true,
    "status": "200"
  }
-"
