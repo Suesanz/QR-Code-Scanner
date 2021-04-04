@@ -1,4 +1,4 @@
-# QR-Code-Scanner
+# QR Code Scanner
 
 ## How to setup?
 
