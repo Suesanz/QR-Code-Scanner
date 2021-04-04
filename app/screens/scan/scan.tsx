@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import {RNCamera} from 'react-native-camera';
+import {useFocusEffect} from '@react-navigation/native';
 
 const styles = StyleSheet.create({
   BottomContainer: {
@@ -13,13 +14,44 @@ const styles = StyleSheet.create({
   },
 });
 
-export const Scan = props => {
-  const onSuccess = e => {
-    props.navigation.navigate({name: 'ResultScreen', params: {data: e.data}});
+interface ScanProps {
+  navigation: {
+    navigate: (arg0: {
+      name: string;
+      params: {data: {data: string; isFromBookAppointment: boolean}};
+    }) => void;
   };
+}
+
+export const Scan = (props: ScanProps) => {
+  const qrCodeScannerRef = useRef<QRCodeScanner>(null);
+
+  const onSuccess = e => {
+    const data = e.data;
+    const processedData = {data: '', isFromBookAppointment: false};
+    try {
+      processedData.data = JSON.parse(data);
+      processedData.isFromBookAppointment = true;
+    } catch (e) {
+      processedData.data =
+        typeof data === 'string' ? data : JSON.stringify(data);
+      processedData.isFromBookAppointment = false;
+    }
+    props.navigation.navigate({
+      name: 'ResultScreen',
+      params: {data: processedData},
+    });
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      qrCodeScannerRef.current && qrCodeScannerRef.current.reactivate();
+    }, []),
+  );
 
   return (
     <QRCodeScanner
+      ref={qrCodeScannerRef}
       onRead={onSuccess}
       flashMode={RNCamera.Constants.FlashMode.off}
       topContent={

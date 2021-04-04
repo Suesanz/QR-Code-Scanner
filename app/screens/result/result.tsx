@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Image,
   ImageStyle,
-  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -12,9 +11,6 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import storage from '@react-native-firebase/storage';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import Placeholder from '../assets/placeholder.svg';
-import Calendar from '../assets/clipart/calendar.svg';
-import Notes from '../assets/clipart/notes.svg';
-import Pen from '../assets/clipart/pen.svg';
 
 const styles = StyleSheet.create({
   ProfileImage: {
@@ -24,51 +20,54 @@ const styles = StyleSheet.create({
   } as ImageStyle,
 });
 
-export const Result = props => {
-  const data = JSON.parse(props?.route?.params?.data || {});
-  console.log('data', data, typeof data);
-  // const data = {
-  //   appointeeEmail: 'yadavsourav24071998@gmail.com',
-  //   appointerEmail: 'Thesuesanz00@gmail.com',
-  //   appointmentTime: '9:08 PM, Mar 28, 2021',
-  //   appointerName: 'Frank Collins',
-  //   id: 7970692542620884,
-  //   appointeeName: 'Sourav Yadav',
-  //   clicked: true,
-  //   status: '200',
-  // };
-  console.log('data.appointmentTime', data.appointmentTime);
-  const appointmentTime = data.appointmentTime.split(',');
-  const time = appointmentTime[0].split(' ');
-  const date = appointmentTime[1].substring(2).split(' ');
-  const year = appointmentTime[2];
+export const Result = (props: {route: {params: {data: any}}}) => {
+  const output = props?.route?.params?.data || '';
+  console.log('data', output, typeof output);
 
   const [isImageLoading, setIsImageLoading] = useState(false);
   const [uri, setUri] = useState('');
   const circularProgressRef = useRef<AnimatedCircularProgress>(null);
   const [error, setError] = useState('');
 
+  const getAppointmentTime = () => output.data.appointmentTime.split(',');
+
+  const getDate = (index: number) => {
+    const appointmentTime = getAppointmentTime();
+    return appointmentTime[1].substring(2).split(' ')[index];
+  };
+
+  const getYear = () => {
+    const appointmentTime = getAppointmentTime();
+    return appointmentTime[2];
+  };
+
+  const getTime = (index: number) => {
+    const appointmentTime = getAppointmentTime();
+    return appointmentTime[0].split(' ')[index] || 0;
+  };
+
   useEffect(() => {
     (async () => {
-      setIsImageLoading(true);
-      try {
-        const url = await storage()
-          .ref(`${data.appointeeEmail}-profile-image.png`)
-          .getDownloadURL();
-        console.log('url', url);
-        setUri(url);
-      } catch (e) {
-        console.log('e', e);
-        setError('Failed to update profile. Please try again.');
+      if (output?.isFromBookAppointment) {
+        setIsImageLoading(true);
+        try {
+          const url = await storage()
+            .ref(`${output.data.appointeeEmail}-profile-image.png`)
+            .getDownloadURL();
+          console.log('url', url);
+          setUri(url);
+        } catch (e) {
+          setError('Data cannot be fetched. Please try again!');
+        }
+        setIsImageLoading(false);
       }
-      setIsImageLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  //2b3a66
+
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#192954'}} edges={['top']}>
-      {data.appointeeEmail ? (
+      {output?.isFromBookAppointment ? (
         <>
           <View
             style={{
@@ -149,7 +148,7 @@ export const Result = props => {
                   textAlign: 'center',
                   color: '#FFFFFF',
                 }}>
-                {data.appointeeName}
+                {output.data.appointeeName}
               </Text>
               <Text
                 style={{
@@ -162,7 +161,7 @@ export const Result = props => {
                 have an appointment with
               </Text>
               <Text style={{fontSize: 35, fontWeight: '800', color: '#FFFFFF'}}>
-                {data.appointerName}
+                {output.data.appointerName}
               </Text>
               <Text
                 style={{
@@ -184,7 +183,7 @@ export const Result = props => {
                     color: '#ff0000',
                     textAlign: 'center',
                   }}>
-                  {time[0]}{' '}
+                  {getTime(0)}{' '}
                 </Text>
                 <Text
                   style={{
@@ -194,7 +193,7 @@ export const Result = props => {
                     color: '#5da4ff',
                     textAlign: 'center',
                   }}>
-                  {time[1]}
+                  {getTime(1)}
                 </Text>
               </View>
               <View style={{flexDirection: 'row'}}>
@@ -206,7 +205,7 @@ export const Result = props => {
                     color: '#5da4ff',
                     textAlign: 'center',
                   }}>
-                  {date[0]}{' '}
+                  {getDate(0)}{' '}
                 </Text>
                 <Text
                   style={{
@@ -216,7 +215,7 @@ export const Result = props => {
                     color: '#ff0000',
                     textAlign: 'center',
                   }}>
-                  {date[1]}
+                  {getDate(1)}
                 </Text>
               </View>
               <Text
@@ -227,14 +226,16 @@ export const Result = props => {
                   color: '#0183ff',
                   textAlign: 'center',
                 }}>
-                {year}
+                {getYear()}
               </Text>
             </View>
           </View>
         </>
       ) : (
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <Text>{data || ''}</Text>
+          <Text style={{fontSize: 22, color: '#FFFFFF', textAlign: 'center'}}>
+            {output.data}
+          </Text>
         </View>
       )}
     </SafeAreaView>
